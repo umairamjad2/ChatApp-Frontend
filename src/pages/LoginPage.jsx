@@ -27,7 +27,7 @@ const LoginPage = () => {
     });
   };
   return (
-    <div className="min-h-screen relative flex items-center justify-center gap-8 sm:justify-evenly max-sm:flex-col overflow-hidden bg-black">
+    <div className="min-h-screen relative flex items-center justify-center p-4 bg-black overflow-hidden">
       {/* Blurred Background Layer */}
       <div 
         className="absolute inset-0 bg-cover bg-center scale-110"
@@ -38,14 +38,14 @@ const LoginPage = () => {
         }}
       ></div>
 
-      {/* left  */}
-      <img src={assets.logo_big} alt="" className="relative w-[min(30vw,250px)]" />
-      {/* right  */}
+      <div className="relative flex flex-col items-center gap-6 sm:gap-10 w-full max-w-[420px]">
+        {/* logo */}
+        <img src={assets.logo_big} alt="QuickChat" className="w-[min(45vw,180px)] sm:w-[220px] drop-shadow-2xl" />
 
-      <form
-        onSubmit={onSubmitHandler}
-        className="bg-[#1a1429]/60 backdrop-blur-3xl text-white border border-white/10 p-8 sm:p-10 flex flex-col gap-5 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] w-full max-w-[400px]"
-      >
+        <form
+          onSubmit={onSubmitHandler}
+          className="bg-[#1a1429]/60 backdrop-blur-3xl text-white border border-white/10 p-8 sm:p-10 flex flex-col gap-5 rounded-[2rem] shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] w-full"
+        >
         <h2 className="font-semibold text-2xl flex justify-between items-center mb-2">
           {currState}
           {isDataSubmitted && (
@@ -156,7 +156,8 @@ const LoginPage = () => {
         </div>
       </form>
     </div>
-  );
+  </div>
+);
 };
 
 export default LoginPage;

@@ -160,6 +160,7 @@ import { formatMessageTime } from "../lib/utils";
 import { ChatContext } from "../../context/ChatContext";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const ChatContainer = () => {
   const { messages, selectedUser, setSelectedUser, sendMessage, getMessages } =
@@ -241,6 +242,10 @@ const ChatContainer = () => {
     }
   }, [messages]);
 
+  const [showChatMenu, setShowChatMenu] = useState(false);
+  const navigate = useNavigate();
+  const { logout } = useContext(AuthContext);
+
   return selectedUser ? (
     <div className="h-full overflow-hidden relative backdrop-blur-lg flex flex-col">
       {/* HEADER */}
@@ -273,13 +278,40 @@ const ChatContainer = () => {
           className="md:hidden w-8 h-8 p-2 rounded-full bg-white/10 hover:bg-white/20 cursor-pointer transition"
         />
 
-        <button
-          type="button"
-          className="max-md:hidden w-8 h-8 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
-          aria-label="Chat info"
-        >
-          <img src={assets.help_icon} alt="Info" className="w-3.5" />
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setShowChatMenu(!showChatMenu)}
+            type="button"
+            className="w-8 h-8 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
+            aria-label="Chat options"
+          >
+            <img src={assets.help_icon} alt="Options" className="w-3.5" />
+          </button>
+
+          {showChatMenu && (
+            <div className="absolute top-full right-0 mt-2 z-20 w-36 p-5 rounded-xl bg-[#1a1429]/95 backdrop-blur-2xl border border-white/10 shadow-2xl text-gray-100">
+              <p
+                onClick={() => {
+                  navigate("/profile");
+                  setShowChatMenu(false);
+                }}
+                className="cursor-pointer text-sm hover:text-violet-400 transition-colors"
+              >
+                Edit Profile
+              </p>
+              <hr className="my-2 border-t border-white/10" />
+              <p
+                onClick={() => {
+                  logout();
+                  setShowChatMenu(false);
+                }}
+                className="cursor-pointer text-sm hover:text-red-400 transition-colors"
+              >
+                Logout
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* CHAT MESSAGES */}

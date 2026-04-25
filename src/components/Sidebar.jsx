@@ -20,13 +20,15 @@ const Sidebar = () => {
 
   const filteredUsers = input
     ? users.filter((user) =>
-        user.fullName.toLowerCase().includes(input.toLowerCase()),
-      )
+      user.fullName.toLowerCase().includes(input.toLowerCase()),
+    )
     : users;
 
   useEffect(() => {
     getUsers();
   }, [onlineUsers]);
+
+  const [showMenu, setShowMenu] = useState(false);
 
   return (
     <div
@@ -35,24 +37,36 @@ const Sidebar = () => {
       <div className="p-5 border-b border-white/10">
         <div className="flex justify-between items-center">
           <img src={assets.logo} alt="logo" className="max-w-40" />
-          <div className="relative py-2 group">
+          <div className="relative py-2">
             <img
+              onClick={() => setShowMenu(!showMenu)}
               src={assets.menu_icon}
               alt="Menu"
               className="max-h-5 cursor-pointer"
             />
-            <div className="absolute top-full right-0 z-20 w-32 p-5 rounded-xl bg-[#1a1429]/90 backdrop-blur-xl border border-white/10 shadow-2xl text-gray-100 hidden group-hover:block">
-              <p
-                onClick={() => navigate("/profile")}
-                className="cursor-pointer text-sm"
-              >
-                Edit Profile
-              </p>
-              <hr className="my-2 border-t border-gray-500" />
-              <p onClick={() => logout()} className="cursor-pointer text-sm">
-                Logout
-              </p>
-            </div>
+            {showMenu && (
+              <div className="absolute top-full right-0 z-20 w-32 p-5 rounded-xl bg-[#1a1429]/90 backdrop-blur-xl border border-white/10 shadow-2xl text-gray-100">
+                <p
+                  onClick={() => {
+                    navigate("/profile");
+                    setShowMenu(false);
+                  }}
+                  className="cursor-pointer text-sm hover:text-violet-400 transition-colors"
+                >
+                  Edit Profile
+                </p>
+                <hr className="my-2 border-t border-white/10" />
+                <p
+                  onClick={() => {
+                    logout();
+                    setShowMenu(false);
+                  }}
+                  className="cursor-pointer text-sm hover:text-red-400 transition-colors"
+                >
+                  Logout
+                </p>
+              </div>
+            )}
           </div>
         </div>
         <div className="bg-white/5 rounded-full flex items-center gap-2 py-3 px-4 mt-5 border border-white/10 focus-within:ring-1 focus-within:ring-violet-500/50 transition-all">
@@ -76,11 +90,10 @@ const Sidebar = () => {
                 [user._id]: 0,
               }));
             }}
-            className={`relative flex items-center gap-3 p-2.5 pl-3 rounded-xl cursor-pointer max-sm:text-sm transition-all duration-200 ${
-              selectedUser?._id === user._id
-                ? "bg-white/10 border border-white/10 shadow-lg"
-                : "hover:bg-white/5 border border-transparent"
-            }`}
+            className={`relative flex items-center gap-3 p-2.5 pl-3 rounded-xl cursor-pointer max-sm:text-sm transition-all duration-200 ${selectedUser?._id === user._id
+              ? "bg-white/10 border border-white/10 shadow-lg"
+              : "hover:bg-white/5 border border-transparent"
+              }`}
           >
             <img
               src={user?.profilePic || assets.avatar_icon}
