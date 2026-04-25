@@ -231,7 +231,9 @@ const ChatContainer = () => {
 
     if (shouldScrollToBottom.current || distanceFromBottom < 120) {
       setTimeout(() => {
-        scrollEnd.current?.scrollIntoView({ behavior: "smooth" });
+        if (messageContainer) {
+          messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
         if (messages?.length > 0) {
           shouldScrollToBottom.current = false;
         }

@@ -32,8 +32,18 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-cover bg-no-repeat flex items-center justify-center p-4">
-      <div className="w-full max-w-3xl bg-[#1a1429]/60 backdrop-blur-3xl text-gray-200 border border-white/10 flex flex-col md:flex-row items-center justify-between rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] overflow-hidden">
+    <div className="min-h-screen relative flex items-center justify-center p-4 bg-black overflow-hidden">
+      {/* Blurred Background Layer */}
+      <div
+        className="absolute inset-0 bg-cover bg-center scale-110"
+        style={{
+          backgroundImage: "url('/bgImage.svg')",
+          filter: "blur(80px)",
+          opacity: "0.6"
+        }}
+      ></div>
+
+      <div className="relative w-full max-w-3xl bg-[#1a1429]/60 backdrop-blur-3xl text-gray-200 border border-white/10 flex flex-col md:flex-row items-center justify-between rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] overflow-hidden">
         
         {/* LEFT FORM */}
         <form
