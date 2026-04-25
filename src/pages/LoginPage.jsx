@@ -27,12 +27,19 @@ const LoginPage = () => {
     });
   };
   return (
-    <div
-      className="min-h-screen bg-cover bg-center flex items-center justify-center gap-8 sm:justify-evenly max-sm:flex-col backdrop-blur-2xl"
-      style={{ backgroundImage: "url('/bgImage.svg')" }}
-    >
+    <div className="min-h-screen relative flex items-center justify-center gap-8 sm:justify-evenly max-sm:flex-col overflow-hidden bg-black">
+      {/* Blurred Background Layer */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center scale-110"
+        style={{ 
+          backgroundImage: "url('/bgImage.svg')",
+          filter: "blur(80px)",
+          opacity: "0.6"
+        }}
+      ></div>
+
       {/* left  */}
-      <img src={assets.logo_big} alt="" className="w-[min(30vw,250px)]" />
+      <img src={assets.logo_big} alt="" className="relative w-[min(30vw,250px)]" />
       {/* right  */}
 
       <form
