@@ -180,13 +180,15 @@ const ChatContainer = () => {
   // send text message
   const handleSendMessage = async (e) => {
     e?.preventDefault?.();
+    const text = input.trim();
+    if (!text) return;
 
-    if (input.trim() === "") return;
+    setInput(""); // Optimistically clear input for smooth UX
 
     try {
-      await sendMessage({ text: input.trim() });
-      setInput("");
+      await sendMessage({ text });
     } catch (err) {
+      setInput(text); // Revert on failure
       toast.error("Failed to send message");
     }
   };
@@ -249,63 +251,62 @@ const ChatContainer = () => {
   return selectedUser ? (
     <div className="h-full overflow-hidden relative backdrop-blur-lg flex flex-col">
       {/* HEADER */}
-      <div className="h-[72px] px-4 border-b border-white/10 bg-white/5 backdrop-blur-xl flex items-center gap-3">
-        <img
-          src={selectedUser.profilePic || assets.avatar_icon}
-          alt={selectedUser.fullName}
-          className="w-10 h-10 rounded-full object-cover ring-2 ring-white/10"
-        />
-
-        <div className="flex-1 min-w-0">
-          <p className="text-base sm:text-lg text-white font-medium truncate">
-            {selectedUser.fullName}
-          </p>
-          <p className="text-[11px] text-violet-100/80 flex items-center gap-1.5">
-            <span
-              className={`w-2 h-2 rounded-full ${onlineUsers?.includes(selectedUser._id)
-                ? "bg-emerald-400"
-                : "bg-slate-400"
-                }`}
-            ></span>
-            {onlineUsers?.includes(selectedUser._id) ? "Online" : "Offline"}
-          </p>
-        </div>
-
+      <div className="h-[64px] sm:h-[72px] px-3 sm:px-5 border-b border-white/10 bg-[#1a1429]/80 backdrop-blur-2xl flex items-center gap-3 z-20">
         <img
           onClick={() => setSelectedUser(null)}
           src={assets.arrow_icon}
           alt="Back"
-          className="md:hidden w-8 h-8 p-2 rounded-full bg-white/10 hover:bg-white/20 cursor-pointer transition"
+          className="md:hidden w-8 h-8 p-1.5 rounded-full bg-white/5 hover:bg-white/10 cursor-pointer transition"
         />
+
+        <div className="relative">
+          <img
+            src={selectedUser.profilePic || assets.avatar_icon}
+            alt={selectedUser.fullName}
+            className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover ring-2 ring-white/10 shadow-sm"
+          />
+          {onlineUsers?.includes(selectedUser._id) && (
+            <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-[#1a1429] rounded-full"></span>
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0 ml-1">
+          <p className="text-[16px] sm:text-[18px] text-white font-medium truncate leading-tight">
+            {selectedUser.fullName}
+          </p>
+          <p className="text-[12px] text-white/50 font-light truncate mt-0.5">
+            {onlineUsers?.includes(selectedUser._id) ? "Online now" : "Offline"}
+          </p>
+        </div>
 
         <div className="relative">
           <button
             onClick={() => setShowChatMenu(!showChatMenu)}
             type="button"
-            className="w-8 h-8 rounded-full border border-white/20 bg-white/10 hover:bg-white/20 flex items-center justify-center transition"
+            className="w-9 h-9 rounded-full hover:bg-white/10 flex items-center justify-center transition-colors"
             aria-label="Chat options"
           >
-            <img src={assets.help_icon} alt="Options" className="w-3.5" />
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/70"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
           </button>
 
           {showChatMenu && (
-            <div className="absolute top-full right-0 mt-2 z-20 w-36 p-5 rounded-xl bg-[#1a1429]/95 backdrop-blur-2xl border border-white/10 shadow-2xl text-gray-100">
+            <div className="absolute top-full right-0 mt-2 z-30 w-40 p-2 rounded-2xl bg-[#251e36]/95 backdrop-blur-xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] text-gray-100">
               <p
                 onClick={() => {
                   navigate("/profile");
                   setShowChatMenu(false);
                 }}
-                className="cursor-pointer text-sm hover:text-violet-400 transition-colors"
+                className="cursor-pointer text-[14px] px-4 py-2.5 rounded-xl hover:bg-white/10 transition-colors"
               >
-                Edit Profile
+                View Profile
               </p>
-              <hr className="my-2 border-t border-white/10" />
+              <div className="h-[1px] bg-white/5 my-1 mx-2" />
               <p
                 onClick={() => {
                   logout();
                   setShowChatMenu(false);
                 }}
-                className="cursor-pointer text-sm hover:text-red-400 transition-colors"
+                className="cursor-pointer text-[14px] px-4 py-2.5 rounded-xl hover:bg-white/10 text-red-400 transition-colors"
               >
                 Logout
               </p>
@@ -317,61 +318,81 @@ const ChatContainer = () => {
       {/* CHAT MESSAGES */}
       <div
         ref={messageContainerRef}
-        className="flex-1 min-h-0 overflow-y-auto p-3 pb-6"
+        className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 scroll-smooth"
       >
         {Array.isArray(messages) &&
           messages.map((msg, index) => {
             if (!msg) return null; // 🔥 prevents crash
 
             const isOwnMessage = msg.senderId === authUser?._id;
+            const prevMsg = messages[index - 1];
+            const nextMsg = messages[index + 1];
+            
+            // Check if messages are grouped together
+            const isConsecutivePrev = prevMsg?.senderId === msg.senderId;
+            const isConsecutiveNext = nextMsg?.senderId === msg.senderId;
 
             return (
               <div
                 key={index}
-                className={`mb-4 flex ${isOwnMessage ? "justify-end" : "justify-start"}`}
+                className={`flex ${isOwnMessage ? "justify-end" : "justify-start"} ${isConsecutivePrev ? "mt-1.5" : "mt-6"}`}
               >
                 <div
-                  className={`flex items-end gap-2 max-w-[78%] ${isOwnMessage ? "flex-row-reverse" : "flex-row"
-                    }`}
+                  className={`flex items-end gap-2 max-w-[85%] sm:max-w-[75%] ${
+                    isOwnMessage ? "flex-row-reverse" : "flex-row"
+                  }`}
                 >
                   {!isOwnMessage && (
-                    <img
-                      src={selectedUser?.profilePic || assets.avatar_icon}
-                      alt=""
-                      className="w-7 h-7 rounded-full object-cover"
-                    />
-                  )}
-                  <div className={isOwnMessage ? "text-right" : "text-left"}>
-                    {msg.image ? (
-                      <img
-                        src={msg.image}
-                        alt=""
-                        className="max-w-[230px] rounded-xl border border-white/10"
-                      />
-                    ) : (
-                      <p
-                        className={`px-3 py-2 max-w-[240px] md:text-sm font-light rounded-xl wrap-break-word text-white ${isOwnMessage
-                          ? "bg-violet-500/35 rounded-br-sm"
-                          : "bg-white/10 rounded-bl-sm"
-                          }`}
-                      >
-                        {msg.text}
-                      </p>
-                    )}
-                    <div className={`flex items-center gap-1 mt-1 px-1 ${isOwnMessage ? "justify-end" : "justify-start"}`}>
-                      <p className="text-[11px] text-gray-400">
-                        {formatMessageTime(msg.createdAt)}
-                      </p>
-                      {isOwnMessage && (
-                        <span className={msg.seen ? "text-blue-400" : "text-gray-400"}>
-                          {msg.seen ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 7 17l-5-5" /><path d="m22 10-7.5 7.5L13 16" /></svg>
-                          ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                          )}
-                        </span>
+                    <div className="w-8 flex-shrink-0 flex justify-center">
+                      {!isConsecutiveNext && (
+                        <img
+                          src={selectedUser?.profilePic || assets.avatar_icon}
+                          alt=""
+                          className="w-7 h-7 rounded-full object-cover shadow-sm mb-5"
+                        />
                       )}
                     </div>
+                  )}
+
+                  <div className={`flex flex-col ${isOwnMessage ? "items-end" : "items-start"} min-w-[80px]`}>
+                    {msg.image ? (
+                      <div className="relative group">
+                        <img
+                          src={msg.image}
+                          alt=""
+                          className={`max-w-[240px] sm:max-w-[320px] rounded-[20px] border border-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.15)] object-cover ${
+                            isOwnMessage ? (isConsecutiveNext ? "rounded-br-[4px]" : "rounded-br-sm") : (isConsecutiveNext ? "rounded-bl-[4px]" : "rounded-bl-sm")
+                          }`}
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className={`relative px-4 py-2.5 text-[15.5px] font-normal rounded-[22px] shadow-[0_4px_16px_rgba(0,0,0,0.08)] ${
+                          isOwnMessage
+                            ? `bg-gradient-to-tr from-violet-600 to-fuchsia-600 text-white ${isConsecutiveNext ? "rounded-br-[6px]" : "rounded-br-[2px]"}`
+                            : `bg-[#251e36] text-white/95 border border-white/5 ${isConsecutiveNext ? "rounded-bl-[6px]" : "rounded-bl-[2px]"}`
+                        }`}
+                      >
+                        <p className="break-words leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                      </div>
+                    )}
+
+                    {!isConsecutiveNext && (
+                      <div className={`flex items-center gap-1 mt-1.5 px-1 ${isOwnMessage ? "justify-end" : "justify-start"}`}>
+                        <p className="text-[10.5px] font-medium text-white/40 uppercase tracking-wider">
+                          {formatMessageTime(msg.createdAt)}
+                        </p>
+                        {isOwnMessage && (
+                          <span className={msg.seen ? "text-sky-400" : "text-white/30"}>
+                            {msg.seen ? (
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 7 17l-5-5" /><path d="m22 10-7.5 7.5L13 16" /></svg>
+                            ) : (
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -382,38 +403,49 @@ const ChatContainer = () => {
       </div>
 
       {/* INPUT BOX */}
-      <div className="p-3 border-t border-white/10 bg-black/10 backdrop-blur-md flex items-center gap-3">
-        <input
-          type="text"
-          placeholder="Type a message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSendMessage(e)}
-          className="flex-1 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-white outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all"
-        />
-
-        <input
-          onChange={handleSendImage}
-          type="file"
-          id="image"
-          accept="image/png, image/jpeg"
-          hidden
-        />
-
-        <label htmlFor="image">
-          <img
-            src={assets.gallery_icon}
-            className="w-5 mr-2 cursor-pointer"
-            alt=""
+      <div className="sticky bottom-0 z-10 w-full p-3 sm:px-4 pb-[calc(12px+env(safe-area-inset-bottom))] border-t border-white/10 bg-[#1a1429]/95 backdrop-blur-xl flex items-end gap-2">
+        <div className="flex-1 bg-white/5 border border-white/10 rounded-[24px] flex items-end px-2 py-1 gap-2 focus-within:border-violet-500/50 focus-within:ring-1 focus-within:ring-violet-500/50 focus-within:bg-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.1)]">
+          <input
+            type="text"
+            name="message"
+            autoComplete="off"
+            placeholder="Type a message..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSendMessage(e)}
+            className="flex-1 bg-transparent px-3 py-2.5 text-white outline-none placeholder-gray-400 text-[15px] min-h-[44px] w-full"
           />
-        </label>
 
-        <img
-          src={assets.send_button}
-          alt=""
+          <input
+            onChange={handleSendImage}
+            type="file"
+            id="image"
+            accept="image/png, image/jpeg"
+            hidden
+          />
+
+          <label htmlFor="image" className="p-2.5 rounded-full hover:bg-white/10 cursor-pointer transition-colors mb-0.5">
+            <img
+              src={assets.gallery_icon}
+              className="w-5 h-5 object-contain opacity-80 hover:opacity-100 transition-opacity"
+              alt="Gallery"
+            />
+          </label>
+        </div>
+
+        <button
           onClick={handleSendMessage}
-          className="w-7 cursor-pointer"
-        />
+          disabled={!input.trim()}
+          className={`w-[48px] h-[48px] rounded-full flex items-center justify-center shrink-0 transition-all duration-200 ${
+            input.trim()
+              ? "bg-gradient-to-tr from-violet-600 to-fuchsia-600 shadow-[0_4px_16px_rgba(139,92,246,0.3)] hover:shadow-[0_4px_20px_rgba(139,92,246,0.5)] active:scale-95 cursor-pointer text-white"
+              : "bg-white/10 text-white/50 cursor-not-allowed"
+          }`}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 ml-1">
+            <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
+          </svg>
+        </button>
       </div>
     </div>
   ) : (
