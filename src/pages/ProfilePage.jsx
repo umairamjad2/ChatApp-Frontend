@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import assets from "../assets/assets";
 import { AuthContext } from "../../context/AuthContext";
+import { ArrowLeft } from "lucide-react";
 
 const ProfilePage = () => {
   const { authUser, updateProfile } = useContext(AuthContext);
@@ -44,15 +45,23 @@ const ProfilePage = () => {
       ></div>
 
       <div className="relative w-full max-w-4xl max-h-[90vh] bg-[#1a1429]/60 backdrop-blur-3xl text-gray-200 border border-white/10 flex flex-col md:flex-row items-center justify-between rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] overflow-hidden">
-        
         {/* LEFT FORM */}
         <form
           onSubmit={handleSubmit}
           className="flex flex-col gap-5 p-6 sm:p-12 flex-1 w-full order-2 md:order-1 overflow-y-auto"
         >
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">Profile Details</h2>
-            <p className="text-sm text-gray-400">Update your personal information</p>
+          <div className="flex items-center gap-4 mb-2">
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/40 hover:text-white transition-all group shadow-xl"
+            >
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
+            </button>
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-0.5">Profile Details</h2>
+              <p className="text-sm text-gray-400">Update your personal information</p>
+            </div>
           </div>
 
           <label

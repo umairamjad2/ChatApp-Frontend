@@ -3,6 +3,7 @@ import assets from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { ChatContext } from "../../context/ChatContext";
+import { MessageSquare, MoreVertical, Search, LogOut, User } from "lucide-react";
 
 const Sidebar = () => {
   const {
@@ -16,6 +17,7 @@ const Sidebar = () => {
   const { logout, onlineUsers } = useContext(AuthContext);
 
   const [input, setInput] = useState("");
+  const [showMenu, setShowMenu] = useState(false);
   const navigate = useNavigate();
 
   const filteredUsers = input
@@ -28,96 +30,128 @@ const Sidebar = () => {
     getUsers();
   }, [onlineUsers]);
 
-  const [showMenu, setShowMenu] = useState(false);
-
   return (
     <div
-      className={`bg-black/20 border-r border-white/5 h-full overflow-y-auto text-white ${selectedUser ? " max-md:hidden" : ""}`}
+      className={`bg-black/20 border-r border-white/5 h-full flex flex-col overflow-hidden text-white pl-[env(safe-area-inset-left)] ${selectedUser ? " max-md:hidden" : ""}`}
     >
-      <div className="p-5 border-b border-white/10">
-        <div className="flex justify-between items-center">
-          <img src={assets.logo} alt="logo" className="max-w-40" />
-          <div className="relative py-2">
-            <img
+      {/* Header - Fixed */}
+      <div className="p-4 sm:p-6 border-b border-white/10 flex-none">
+        <div className="flex justify-between items-center mb-4 sm:mb-6">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-violet-600 to-fuchsia-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+              <MessageSquare className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white" />
+            </div>
+            <span className="text-lg sm:text-xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
+              QuickChat
+            </span>
+          </div>
+          <div className="relative">
+            <button 
               onClick={() => setShowMenu(!showMenu)}
-              src={assets.menu_icon}
-              alt="Menu"
-              className="max-h-5 cursor-pointer"
-            />
+              className="p-2 hover:bg-white/5 rounded-xl transition-colors text-white/40 hover:text-white"
+            >
+              <MoreVertical className="w-5 h-5" />
+            </button>
             {showMenu && (
-              <div className="absolute top-full right-0 z-20 w-32 p-5 rounded-xl bg-[#1a1429]/90 backdrop-blur-xl border border-white/10 shadow-2xl text-gray-100">
-                <p
-                  onClick={() => {
-                    navigate("/profile");
-                    setShowMenu(false);
-                  }}
-                  className="cursor-pointer text-sm hover:text-violet-400 transition-colors"
+              <div className="absolute top-full right-0 z-50 w-48 mt-2 p-2 rounded-2xl bg-[#1a1429]/95 backdrop-blur-2xl border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-200">
+                <button
+                  onClick={() => { navigate("/profile"); setShowMenu(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-sm text-white/70 hover:text-white transition-all"
                 >
-                  Edit Profile
-                </p>
-                <hr className="my-2 border-t border-white/10" />
-                <p
-                  onClick={() => {
-                    logout();
-                    setShowMenu(false);
-                  }}
-                  className="cursor-pointer text-sm hover:text-red-400 transition-colors"
+                  <User className="w-4 h-4" /> Edit Profile
+                </button>
+                <div className="h-px bg-white/5 my-1" />
+                <button
+                  onClick={() => { logout(); setShowMenu(false); }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-sm text-red-400 hover:text-red-300 transition-all"
                 >
-                  Logout
-                </p>
+                  <LogOut className="w-4 h-4" /> Logout
+                </button>
               </div>
             )}
           </div>
         </div>
-        <div className="bg-white/5 rounded-full flex items-center gap-2 py-3 px-4 mt-5 border border-white/10 focus-within:ring-1 focus-within:ring-violet-500/50 transition-all">
-          <img src={assets.search_icon} alt="Search" className="w-3" />
+
+        <div className="relative group">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-violet-400 transition-colors" />
           <input
-            onChange={(e) => setInput(e.target.value)}
             type="text"
-            className="bg-transparent border-none  outline-none text-white text-xs placeholder-[#c8c8c8] flex-1"
-            placeholder="Search User..."
+            placeholder="Search contacts..."
+            className="w-full bg-white/5 border border-white/5 rounded-xl py-2.5 sm:py-3.5 pl-11 pr-4 text-[14px] sm:text-[15px] placeholder:text-white/20 outline-none focus:border-violet-500/30 focus:bg-white/10 transition-all"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
           />
         </div>
       </div>
-      <div className="flex flex-col p-2 gap-1">
-        {filteredUsers.map((user, index) => (
-          <div
-            key={index}
-            onClick={() => {
-              setSelectedUser(user);
-              setUnseenMessages((prev) => ({
-                ...prev,
-                [user._id]: 0,
-              }));
-            }}
-            className={`relative flex items-center gap-3 p-2.5 pl-3 rounded-xl cursor-pointer max-sm:text-sm transition-all duration-200 ${selectedUser?._id === user._id
-              ? "bg-white/10 border border-white/10 shadow-lg"
-              : "hover:bg-white/5 border border-transparent"
-              }`}
-          >
-            <img
-              src={user?.profilePic || assets.avatar_icon}
-              alt=""
-              className="w-10 h-10 rounded-full object-cover"
-            />
-            <div className="flex flex-col leading-5 min-w-0">
-              <p className="text-sm truncate">{user.fullName}</p>
-              {onlineUsers.includes(user._id) ? (
-                <span className="text-green-400 text-xs">Online</span>
-              ) : (
-                <span className="text-neutral-400 text-xs">Offline</span>
-              )}
-              <p className="text-xs text-gray-300 truncate max-w-[160px]">
-                {user.status}
-              </p>
+
+      {/* User List - Scrollable */}
+      <div className="flex-1 overflow-y-auto px-2 sm:px-3 py-2 sm:py-4 custom-scrollbar">
+        <div className="space-y-0.5 sm:space-y-1">
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((user, index) => (
+              <div
+                key={index}
+                onClick={() => {
+                  setSelectedUser(user);
+                  setUnseenMessages((prev) => ({
+                    ...prev,
+                    [user._id]: 0,
+                  }));
+                }}
+                className={`relative flex items-center gap-3 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200 group ${
+                  selectedUser?._id === user._id
+                    ? "bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-500/20 shadow-lg"
+                    : "hover:bg-white/5 border border-transparent"
+                }`}
+              >
+                <div className="relative flex-none">
+                  <div className="w-11 h-11 sm:w-13 h-13 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-white/5 group-hover:border-violet-500/30 transition-colors">
+                    <img
+                      src={user?.profilePic || assets.avatar_icon}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {onlineUsers.includes(user._id) && (
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-[#1a1429] rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-emerald-500 rounded-full border-2 border-[#1a1429] animate-pulse" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start mb-0.5">
+                    <h3 className="font-semibold text-[14px] sm:text-[15px] truncate text-white/90 group-hover:text-white transition-colors">
+                      {user.fullName}
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className={`text-[11px] sm:text-xs truncate ${onlineUsers.includes(user._id) ? "text-emerald-400/70" : "text-white/30"}`}>
+                      {onlineUsers.includes(user._id) ? "Active now" : "Offline"}
+                    </p>
+                  </div>
+                </div>
+
+                {unseenMessages[user._id] > 0 && (
+                  <div className="flex-none flex items-center justify-center">
+                    <div className="min-w-[20px] h-5 rounded-full bg-violet-600 flex items-center justify-center px-1.5 shadow-lg shadow-violet-600/30 animate-in zoom-in duration-300">
+                      <span className="text-[10px] font-bold text-white">
+                        {unseenMessages[user._id]}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+              <div className="w-16 h-16 rounded-3xl bg-white/5 flex items-center justify-center mb-4">
+                <Search className="w-8 h-8 text-white/10" />
+              </div>
+              <p className="text-white/40 font-medium">No results found</p>
             </div>
-            {unseenMessages[user._id] > 0 && (
-              <p className="absolute top-4 right-4 text-xs h-5 w-5 flex justify-center items-center rounded-full bg-violet-500/50">
-                {unseenMessages[user._id]}
-              </p>
-            )}
-          </div>
-        ))}
+          )}
+        </div>
       </div>
     </div>
   );

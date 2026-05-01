@@ -13,8 +13,11 @@ export const ChatProvider = ({ children }) => {
   const [unseenMessages, setUnseenMessages] = useState({});
   const [activeRoomId, setActiveRoomId] = useState(null);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [showRightSidebar, setShowRightSidebar] = useState(false);
 
-  //function to get users for sidebar
+  // function to get users for sidebar
   const getUsers = async () => {
     try {
       const { data } = await axios.get(`/api/messages/users`);
@@ -29,18 +32,44 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
-  //function to get selected user messages
+  // function to get selected user messages
   const getMessages = async (userId) => {
+    setLoadingMessages(true);
+    setHasMore(true);
     try {
-      const { data } = await axios.get(`/api/messages/${userId}`);
+      const { data } = await axios.get(`/api/messages/${userId}?limit=20`);
       if (data.success) {
         setMessages(data.messages);
+        if (data.messages.length < 20) setHasMore(false);
       } else {
         console.log(data.message);
       }
     } catch (error) {
       toast.error(error.message);
+    } finally {
+      setLoadingMessages(false);
     }
+  };
+
+  // function to load older messages
+  const loadMoreMessages = async (userId, offset) => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const { data } = await axios.get(`/api/messages/${userId}?limit=20&offset=${offset}`);
+      if (data.success) {
+        if (data.messages.length < 20) setHasMore(false);
+        if (data.messages.length > 0) {
+          setMessages((prev) => [...data.messages, ...prev]);
+          return data.messages.length; // Return number of new messages for height calculation
+        }
+      }
+    } catch (error) {
+      console.error("Error loading more messages:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+    return 0;
   };
 
   //function to send message
@@ -102,6 +131,11 @@ export const ChatProvider = ({ children }) => {
     unseenMessages,
     setUnseenMessages,
     getMessages,
+    loadMoreMessages,
+    loadingMore,
+    hasMore,
+    showRightSidebar,
+    setShowRightSidebar,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
