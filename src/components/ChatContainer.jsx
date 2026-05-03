@@ -402,7 +402,7 @@ const ChatContainer = () => {
 
             {Array.isArray(messages) &&
               messages.map((msg, index) => (
-                <MessageItem key={msg._id || index} msg={msg} index={index} messages={messages} />
+                <MessageItem key={msg._id} msg={msg} index={index} messages={messages} />
               ))}
             <div ref={scrollRef} className="h-2" />
           </div>

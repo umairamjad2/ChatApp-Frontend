@@ -78,7 +78,15 @@ export const ChatProvider = ({ children }) => {
       if (data.success) {
         if (data.messages.length < 20) setHasMore(false);
         if (data.messages.length > 0) {
-          setMessages((prev) => [...data.messages, ...prev]);
+          setMessages((prev) => {
+            const allMessages = [...data.messages, ...prev];
+            // Deduplicate by _id
+            const uniqueMessages = Array.from(
+              new Map(allMessages.map((m) => [m._id, m])).values()
+            );
+            // Sort by createdAt to ensure correct order
+            return uniqueMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+          });
           return data.messages.length; // Return number of new messages for height calculation
         }
       }
@@ -98,7 +106,10 @@ export const ChatProvider = ({ children }) => {
       );
 
       if (data.success) {
-        setMessages((prev) => [...prev, data.message]);
+        setMessages((prev) => {
+          const newMessages = [...prev, data.message];
+          return Array.from(new Map(newMessages.map((m) => [m._id, m])).values());
+        });
       } else {
         toast.error(data.message);
       }
@@ -157,7 +168,10 @@ export const ChatProvider = ({ children }) => {
     socket.on("newMessage", (newMessage) => {
       if (selectedUser && newMessage.senderId === selectedUser._id) {
         newMessage.seen = true;
-        setMessages((prev) => [...prev, newMessage]);
+        setMessages((prev) => {
+          const newMessages = [...prev, newMessage];
+          return Array.from(new Map(newMessages.map((m) => [m._id, m])).values());
+        });
         axios.put(`/api/messages/mark/${newMessage._id}`);
       } else {
         setUnseenMessages((prevUnseenMessages) => ({
