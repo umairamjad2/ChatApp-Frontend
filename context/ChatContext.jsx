@@ -16,6 +16,7 @@ export const ChatProvider = ({ children }) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [showRightSidebar, setShowRightSidebar] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   // function to get users for sidebar
   const getUsers = async () => {
@@ -117,6 +118,7 @@ export const ChatProvider = ({ children }) => {
 
   // function to clear chat
   const clearChat = async (userId) => {
+    setIsClearing(true);
     try {
       const { data } = await axios.delete(`/api/messages/clear/${userId}`);
       if (data.success) {
@@ -127,6 +129,8 @@ export const ChatProvider = ({ children }) => {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
+    } finally {
+      setIsClearing(false);
     }
   };
   // function to subscribe to selected user messages
@@ -178,6 +182,7 @@ export const ChatProvider = ({ children }) => {
     sendMessage,
     deleteMessage,
     clearChat,
+    isClearing,
     setSelectedUser,
     unseenMessages,
     setUnseenMessages,

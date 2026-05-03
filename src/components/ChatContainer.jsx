@@ -348,14 +348,20 @@ const ChatContainer = () => {
           </button>
           <div className="relative">
             <button
-              onClick={() => setShowChatMenu(!showChatMenu)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowChatMenu(!showChatMenu);
+              }}
               className={`p-2.5 rounded-xl transition-all ${showChatMenu ? "bg-white/10 text-white" : "text-white/40 hover:bg-white/5 hover:text-white"}`}
             >
               <MoreVertical className="w-5 h-5" />
             </button>
 
             {showChatMenu && (
-              <div className="absolute top-full right-0 z-50 w-48 mt-2 p-2 rounded-2xl bg-[#1a1429]/95 backdrop-blur-2xl border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-200">
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="absolute top-full right-0 z-50 w-48 mt-2 p-2 rounded-2xl bg-[#1a1429]/95 backdrop-blur-2xl border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-200"
+              >
                 <button
                   onClick={() => {
                     setShowRightSidebar(!showRightSidebar);
@@ -383,7 +389,7 @@ const ChatContainer = () => {
       </div>
 
       {/* CHAT MESSAGES - Scrollable Flex-1 */}
-      {loadingMessages ? (
+      {loadingMessages || isClearing ? (
         <MessageSkeleton />
       ) : (
         <div
