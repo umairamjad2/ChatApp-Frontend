@@ -166,7 +166,7 @@ const ChatContainer = () => {
       {[1, 2, 3, 4, 5, 6].map((i) => (
         <div key={i} className={`flex ${i % 2 === 0 ? "justify-end" : "justify-start"}`}>
           <div className="flex items-end gap-3 max-w-[70%]">
-            {i % 2 !== 0 && <div className="w-8 h-8 rounded-xl bg-white/5 animate-pulse" />}
+            {i % 2 !== 0 && <div className="w-8 h-8 rounded-full bg-white/5 animate-pulse" />}
             <div className={`h-12 w-48 sm:w-64 rounded-2xl bg-white/5 animate-pulse ${i % 2 === 0 ? "rounded-br-none" : "rounded-bl-none"}`} />
           </div>
         </div>
@@ -206,8 +206,8 @@ const ChatContainer = () => {
         <div className={`flex w-full ${isOwnMessage ? "justify-end" : "justify-start"} ${isConsecutivePrev ? "mt-1.5" : "mt-6"}`}>
           <div className={`flex items-end gap-2.5 max-w-[85%] sm:max-w-[75%] ${isOwnMessage ? "flex-row-reverse" : "flex-row"}`}>
             {!isOwnMessage && !isConsecutiveNext && (
-              <div className="w-8 h-8 rounded-xl overflow-hidden flex-none shadow-lg shadow-black/20 border border-white/5">
-                <img src={selectedUser.profilePic || assets.avatar_icon} alt="" className="w-full h-full object-cover" />
+              <div className="w-8 h-8 rounded-full overflow-hidden flex-none shadow-lg shadow-black/20 border border-white/5">
+                <img src={selectedUser.profilePic || assets.avatar_icon} alt="" className="w-full h-full object-cover" crossOrigin="anonymous" referrerPolicy="no-referrer" />
               </div>
             )}
             {!isOwnMessage && isConsecutiveNext && <div className="w-8" />}
@@ -232,11 +232,13 @@ const ChatContainer = () => {
             }`}
         >
           {!isOwnMessage && !isConsecutiveNext && (
-            <div className="w-8 h-8 rounded-xl overflow-hidden flex-none shadow-lg shadow-black/20 border border-white/5">
+            <div className="w-8 h-8 rounded-full overflow-hidden flex-none shadow-lg shadow-black/20 border border-white/5">
               <img
                 src={selectedUser.profilePic || assets.avatar_icon}
                 alt=""
                 className="w-full h-full object-cover"
+                crossOrigin="anonymous"
+                referrerPolicy="no-referrer"
               />
             </div>
           )}
@@ -252,6 +254,8 @@ const ChatContainer = () => {
                     ? (isConsecutiveNext ? "rounded-br-[4px]" : "rounded-br-[2px]")
                     : (isConsecutiveNext ? "rounded-bl-[4px]" : "rounded-bl-[2px]")
                     }`}
+                  crossOrigin="anonymous"
+                  referrerPolicy="no-referrer"
                 />
                 <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full flex items-center gap-1.5 opacity-0 group-hover/img:opacity-100 transition-opacity">
                   <p className="text-[10px] font-bold text-white/90">
@@ -310,11 +314,13 @@ const ChatContainer = () => {
         </button>
 
         <div className="relative group">
-          <div className="w-11 h-11 sm:w-13 h-13 rounded-2xl overflow-hidden border-2 border-white/5 group-hover:border-violet-500/30 transition-colors">
+          <div className="w-11 h-11 sm:w-13 h-13 rounded-full overflow-hidden border-2 border-white/5 group-hover:border-violet-500/30 transition-colors">
             <img
               src={selectedUser.profilePic || assets.avatar_icon}
               alt={selectedUser.fullName}
               className="w-full h-full object-cover"
+              crossOrigin="anonymous"
+              referrerPolicy="no-referrer"
             />
           </div>
           {onlineUsers?.includes(selectedUser._id) && (

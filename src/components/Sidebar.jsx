@@ -105,11 +105,13 @@ const Sidebar = () => {
                 }`}
               >
                 <div className="relative flex-none">
-                  <div className="w-11 h-11 sm:w-13 h-13 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-white/5 group-hover:border-violet-500/30 transition-colors">
+                  <div className="w-11 h-11 sm:w-13 h-13 rounded-full overflow-hidden border-2 border-white/5 group-hover:border-violet-500/30 transition-colors">
                     <img
                       src={user?.profilePic || assets.avatar_icon}
                       alt=""
                       className="w-full h-full object-cover"
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
                     />
                   </div>
                   {onlineUsers.includes(user._id) && (

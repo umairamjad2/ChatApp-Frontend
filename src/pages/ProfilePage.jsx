@@ -84,6 +84,8 @@ const ProfilePage = () => {
                 }
                 alt="Avatar"
                 className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover ring-2 ring-white/20 group-hover:ring-violet-400 transition-all shadow-lg"
+                crossOrigin="anonymous"
+                referrerPolicy="no-referrer"
               />
               <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <span className="text-white text-xl">+</span>
@@ -138,6 +140,8 @@ const ProfilePage = () => {
               src={selectedImg ? URL.createObjectURL(selectedImg) : (authUser?.profilePic || assets.avatar_icon)}
               alt="Profile Preview"
               className="w-56 h-56 rounded-full object-cover ring-8 ring-white/5 shadow-[0_0_60px_rgba(139,92,246,0.2)] relative z-10"
+              crossOrigin="anonymous"
+              referrerPolicy="no-referrer"
             />
           </div>
         </div>
