@@ -6,13 +6,13 @@ import toast from "react-hot-toast";
 import { AuthContext } from "../../context/AuthContext";
 import {
   ArrowLeft, Phone, Video, MoreVertical, CheckCheck, Check,
-  Smile, Image, Send, X, MessageSquare
+  Smile, Image, Send, X, MessageSquare, Trash2
 } from "lucide-react";
 
 const ChatContainer = () => {
   const {
     messages, selectedUser, setSelectedUser, sendMessage, getMessages,
-    loadMoreMessages, loadingMore, hasMore, loadingMessages,
+    deleteMessage, clearChat, loadMoreMessages, loadingMore, hasMore, loadingMessages,
     showRightSidebar, setShowRightSidebar
   } = useContext(ChatContext);
   const { authUser, onlineUsers } = useContext(AuthContext);
@@ -25,6 +25,7 @@ const ChatContainer = () => {
   const [input, setInput] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [showChatMenu, setShowChatMenu] = useState(false);
+  const [deleteMenu, setDeleteMenu] = useState(null); // { messageId, x, y, isSender }
 
   const scrollToBottom = (behavior = "smooth") => {
     if (scrollRef.current) {
@@ -42,6 +43,16 @@ const ChatContainer = () => {
       getMessages(selectedUser._id);
     }
   }, [selectedUser, getMessages]);
+
+  // Handle click outside to close menus
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setDeleteMenu(null);
+      setShowChatMenu(false);
+    };
+    window.addEventListener("click", handleClickOutside);
+    return () => window.removeEventListener("click", handleClickOutside);
+  }, []);
 
   // Handle send message
   const handleSendMessage = async (e) => {
@@ -171,10 +182,52 @@ const ChatContainer = () => {
     const isConsecutivePrev = index > 0 && messages[index - 1]?.senderId === msg.senderId;
     const isConsecutiveNext = index < messages.length - 1 && messages[index + 1]?.senderId === msg.senderId;
 
+    const handleContextMenu = (e) => {
+      if (msg.isDeleted) return;
+      e.preventDefault();
+      const rect = e.currentTarget.getBoundingClientRect();
+      setDeleteMenu({
+        messageId: msg._id,
+        x: e.clientX || e.touches?.[0]?.clientX || rect.left,
+        y: e.clientY || e.touches?.[0]?.clientY || rect.top,
+        isSender: isOwnMessage
+      });
+    };
+
+    // Long press logic for mobile
+    let pressTimer;
+    const handleTouchStart = (e) => {
+      pressTimer = setTimeout(() => handleContextMenu(e), 500);
+    };
+    const handleTouchEnd = () => {
+      clearTimeout(pressTimer);
+    };
+
+    if (msg.isDeleted) {
+      return (
+        <div className={`flex w-full ${isOwnMessage ? "justify-end" : "justify-start"} ${isConsecutivePrev ? "mt-1.5" : "mt-6"}`}>
+          <div className={`flex items-end gap-2.5 max-w-[85%] sm:max-w-[75%] ${isOwnMessage ? "flex-row-reverse" : "flex-row"}`}>
+            {!isOwnMessage && !isConsecutiveNext && (
+              <div className="w-8 h-8 rounded-xl overflow-hidden flex-none shadow-lg shadow-black/20 border border-white/5">
+                <img src={selectedUser.profilePic || assets.avatar_icon} alt="" className="w-full h-full object-cover" />
+              </div>
+            )}
+            {!isOwnMessage && isConsecutiveNext && <div className="w-8" />}
+            <div className={`px-4 py-2 rounded-2xl text-[13px] italic text-white/30 border border-white/5 bg-white/5 ${isOwnMessage ? "rounded-br-none" : "rounded-bl-none"}`}>
+              This message was deleted
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div
         className={`flex w-full ${isOwnMessage ? "justify-end" : "justify-start"} ${isConsecutivePrev ? "mt-1.5" : "mt-6"} transform-gpu will-change-transform`}
         style={{ contentVisibility: "auto" }}
+        onContextMenu={handleContextMenu}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         <div
           className={`flex items-end gap-2.5 max-w-[85%] sm:max-w-[75%] ${isOwnMessage ? "flex-row-reverse" : "flex-row"
@@ -312,6 +365,17 @@ const ChatContainer = () => {
                 >
                   <Image className="w-4 h-4" /> Media
                 </button>
+                <button
+                  onClick={() => {
+                    if (window.confirm("Are you sure you want to clear all messages in this chat?")) {
+                      clearChat(selectedUser._id);
+                    }
+                    setShowChatMenu(false);
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-sm text-red-400 hover:text-red-300 transition-all border-t border-white/5"
+                >
+                  <Trash2 className="w-4 h-4" /> Clear Chat
+                </button>
               </div>
             )}
           </div>
@@ -416,6 +480,38 @@ const ChatContainer = () => {
           </div>
         )}
       </div>
+
+      {deleteMenu && (
+        <div
+          className="fixed z-[100] w-56 p-2 rounded-2xl bg-[#1a1429]/95 backdrop-blur-2xl border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-200"
+          style={{
+            left: Math.min(deleteMenu.x, window.innerWidth - 240),
+            top: Math.min(deleteMenu.y, window.innerHeight - 150)
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => {
+              deleteMessage(deleteMenu.messageId, false);
+              setDeleteMenu(null);
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 text-[14px] text-white/70 hover:text-white transition-all font-medium"
+          >
+            Delete for me
+          </button>
+          {deleteMenu.isSender && (
+            <button
+              onClick={() => {
+                deleteMessage(deleteMenu.messageId, true);
+                setDeleteMenu(null);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/10 text-[14px] text-red-400 hover:text-red-300 transition-all font-medium border-t border-white/5"
+            >
+              Delete for everyone
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

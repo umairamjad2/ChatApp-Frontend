@@ -71,7 +71,6 @@ export const ChatProvider = ({ children }) => {
     }
     return 0;
   };
-
   //function to send message
   const sendMessage = async (messageData) => {
     try {
@@ -81,12 +80,53 @@ export const ChatProvider = ({ children }) => {
       );
 
       if (data.success) {
-        setMessages((prev) => [...prev, data.newMessage]);
+        setMessages((prev) => [...prev, data.message]);
       } else {
         toast.error(data.message);
       }
     } catch (error) {
       toast.error(error.message);
+    }
+  };
+
+  // function to delete message
+  const deleteMessage = async (messageId, deleteForEveryone) => {
+    try {
+      const { data } = await axios.delete(`/api/messages/${messageId}`, {
+        data: { delete_for_everyone: deleteForEveryone },
+      });
+
+      if (data.success) {
+        if (deleteForEveryone) {
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg._id === messageId ? { ...msg, isDeleted: true, text: "", image: "" } : msg
+            )
+          );
+        } else {
+          setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+        }
+        toast.success("Message deleted");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
+    }
+  };
+
+  // function to clear chat
+  const clearChat = async (userId) => {
+    try {
+      const { data } = await axios.delete(`/api/messages/clear/${userId}`);
+      if (data.success) {
+        setMessages([]);
+        toast.success("Chat cleared");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message);
     }
   };
   // function to subscribe to selected user messages
@@ -106,12 +146,21 @@ export const ChatProvider = ({ children }) => {
         }));
       }
     });
+
+    socket.on("messageDeleted", ({ messageId }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId ? { ...msg, isDeleted: true, text: "", image: "" } : msg
+        )
+      );
+    });
   };
 
   //function to unsubscribe from selected user messages
   const unsubscribeFromMessages = async () => {
     if (!socket) return;
     socket.off("newMessage");
+    socket.off("messageDeleted");
   };
 
   //  Listen for incoming messages
@@ -127,6 +176,8 @@ export const ChatProvider = ({ children }) => {
     getUsers,
     setMessages,
     sendMessage,
+    deleteMessage,
+    clearChat,
     setSelectedUser,
     unseenMessages,
     setUnseenMessages,
