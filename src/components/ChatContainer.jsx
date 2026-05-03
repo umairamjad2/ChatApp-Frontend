@@ -431,6 +431,8 @@ const ChatContainer = () => {
             </button>
             <textarea
               ref={inputRef}
+              id="message-input"
+              name="message-input"
               rows="1"
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -448,6 +450,8 @@ const ChatContainer = () => {
                 <Image className="w-5.5 h-5.5 group-hover:scale-110 transition-transform" />
                 <input
                   type="file"
+                  id="image-input"
+                  name="image-input"
                   accept="image/*"
                   className="hidden"
                   onChange={handleImageChange}
