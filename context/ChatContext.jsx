@@ -26,6 +26,18 @@ export const ChatProvider = ({ children }) => {
       if (data.success) {
         setUsers(data.users);
         setUnseenMessages(data.unseenMessages);
+
+        // Restore persisted selected user after refresh
+        const savedUserId = localStorage.getItem("selectedUserId");
+        if (savedUserId) {
+          const savedUser = data.users.find((u) => u._id === savedUserId);
+          if (savedUser) {
+            setSelectedUser(savedUser);
+          } else {
+            // User no longer exists or is inaccessible — clear it
+            localStorage.removeItem("selectedUserId");
+          }
+        }
       } else {
         console.log(data.message);
       }
@@ -163,17 +175,26 @@ export const ChatProvider = ({ children }) => {
     }
   }, [axios]);
   // function to subscribe to selected user messages
-  const subscribeToMessages = useCallback(async () => {
+  const subscribeToMessages = useCallback(() => {
     if (!socket) return;
+
+    // Handle new incoming messages
     socket.on("newMessage", (newMessage) => {
-      if (selectedUser && newMessage.senderId === selectedUser._id) {
+      const isCurrentChat = selectedUser && newMessage.senderId === selectedUser._id;
+
+      if (isCurrentChat) {
+        // Chat is open — mark as seen immediately
         newMessage.seen = true;
+        newMessage.status = "seen";
         setMessages((prev) => {
           const newMessages = [...prev, newMessage];
           return Array.from(new Map(newMessages.map((m) => [m._id, m])).values());
         });
+        // Tell the backend this message has been seen
         axios.put(`/api/messages/mark/${newMessage._id}`);
       } else {
+        // Chat is not open — mark as delivered only
+        newMessage.status = "delivered";
         setUnseenMessages((prevUnseenMessages) => ({
           ...prevUnseenMessages,
           [newMessage.senderId]: prevUnseenMessages[newMessage.senderId]
@@ -183,6 +204,30 @@ export const ChatProvider = ({ children }) => {
       }
     });
 
+    // Single message seen (e.g., triggered by markMessageAsSeen API + socket emit from backend)
+    socket.on("messageSeen", ({ messageId, seenAt }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId
+            ? { ...msg, seen: true, status: "seen", seenAt }
+            : msg
+        )
+      );
+    });
+
+    // Bulk messages seen (e.g., when receiver opens the chat and backend marks all as seen)
+    socket.on("messagesSeen", ({ senderId, receiverId, seenAt }) => {
+      // Only update messages WE sent that the receiver has now read
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.senderId === senderId && msg.receiverId === receiverId && !msg.seen
+            ? { ...msg, seen: true, status: "seen", seenAt }
+            : msg
+        )
+      );
+    });
+
+    // Handle message deletions
     socket.on("messageDeleted", ({ messageId }) => {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -192,10 +237,12 @@ export const ChatProvider = ({ children }) => {
     });
   }, [socket, selectedUser, axios]);
 
-  //function to unsubscribe from selected user messages
-  const unsubscribeFromMessages = useCallback(async () => {
+  // function to unsubscribe from selected user messages
+  const unsubscribeFromMessages = useCallback(() => {
     if (!socket) return;
     socket.off("newMessage");
+    socket.off("messageSeen");
+    socket.off("messagesSeen");
     socket.off("messageDeleted");
   }, [socket]);
 
@@ -210,6 +257,9 @@ export const ChatProvider = ({ children }) => {
     if (user) {
       setMessages([]);
       setLoadingMessages(true);
+      localStorage.setItem("selectedUserId", user._id);
+    } else {
+      localStorage.removeItem("selectedUserId");
     }
   }, []);
 

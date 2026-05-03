@@ -46,7 +46,7 @@ const Sidebar = () => {
             </span>
           </div>
           <div className="relative">
-            <button 
+            <button
               onClick={() => setShowMenu(!showMenu)}
               className="p-2 hover:bg-white/5 rounded-xl transition-colors text-white/40 hover:text-white"
             >
@@ -98,14 +98,13 @@ const Sidebar = () => {
                     [user._id]: 0,
                   }));
                 }}
-                className={`relative flex items-center gap-3 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200 group ${
-                  selectedUser?._id === user._id
+                className={`relative flex items-center gap-3 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200 group ${selectedUser?._id === user._id
                     ? "bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-500/20 shadow-lg"
                     : "hover:bg-white/5 border border-transparent"
-                }`}
+                  }`}
               >
                 <div className="relative flex-none">
-                  <div className="w-11 h-11 sm:w-13 h-13 rounded-full overflow-hidden border-2 border-white/5 group-hover:border-violet-500/30 transition-colors">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-white/5 group-hover:border-violet-500/30 transition-colors">
                     <img
                       src={user?.profilePic || assets.avatar_icon}
                       alt=""
