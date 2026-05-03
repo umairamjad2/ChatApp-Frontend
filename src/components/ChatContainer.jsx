@@ -12,7 +12,7 @@ import {
 const ChatContainer = () => {
   const {
     messages, selectedUser, setSelectedUser, sendMessage, getMessages,
-    deleteMessage, clearChat, loadMoreMessages, loadingMore, hasMore, loadingMessages,
+    deleteMessage, clearChat, isClearing, loadMoreMessages, loadingMore, hasMore, loadingMessages,
     showRightSidebar, setShowRightSidebar
   } = useContext(ChatContext);
   const { authUser, onlineUsers } = useContext(AuthContext);
