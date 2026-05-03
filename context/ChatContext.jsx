@@ -118,9 +118,10 @@ export const ChatProvider = ({ children }) => {
 
   // function to clear chat
   const clearChat = async (userId) => {
+    if (!userId) return toast.error("User ID is required");
     setIsClearing(true);
     try {
-      const { data } = await axios.delete(`/api/messages/clear/${userId}`);
+      const { data } = await axios.delete(`/api/messages/clear-conversation/${userId}`);
       if (data.success) {
         setMessages([]);
         toast.success("Chat cleared");
