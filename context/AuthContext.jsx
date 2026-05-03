@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [authUser, setAuthUser] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [socket, setSocket] = useState(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   //check if user is authenticated and if so, set the user data and connect to socket
   const checkAuth = async () => {
@@ -23,7 +24,10 @@ export const AuthProvider = ({ children }) => {
         connectSocket(data.user);
       }
     } catch (error) {
-      toast.error(error.message);
+      console.log("Check Auth Error:", error.message);
+      setAuthUser(null);
+    } finally {
+      setIsCheckingAuth(false);
     }
   };
   //function to update token and user data on login or logout
@@ -96,6 +100,8 @@ export const AuthProvider = ({ children }) => {
     if (token) {
       axios.defaults.headers.common["token"] = token;
       checkAuth();
+    } else {
+      setIsCheckingAuth(false);
     }
   }, []);
 
@@ -104,6 +110,7 @@ export const AuthProvider = ({ children }) => {
     authUser,
     onlineUsers,
     socket,
+    isCheckingAuth,
     login,
     logout,
     updateProfile,
