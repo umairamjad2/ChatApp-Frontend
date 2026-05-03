@@ -32,7 +32,7 @@ const Sidebar = () => {
 
   return (
     <div
-      className={`bg-black/20 border-r border-white/5 h-full flex flex-col overflow-hidden text-white pl-[env(safe-area-inset-left)] ${selectedUser ? " max-md:hidden" : ""}`}
+      className={`bg-[#150f22]/95 backdrop-blur-2xl border-r border-white/5 h-full flex flex-col overflow-hidden text-white pl-[env(safe-area-inset-left)] ${selectedUser ? " max-md:hidden" : ""}`}
     >
       {/* Header - Fixed */}
       <div className="p-4 sm:p-6 border-b border-white/10 flex-none">
@@ -72,12 +72,12 @@ const Sidebar = () => {
           </div>
         </div>
 
-        <div className="relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 group-focus-within:text-violet-400 transition-colors" />
+        <div className="relative group mt-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-white/30 group-focus-within:text-violet-400 transition-colors" />
           <input
             type="text"
             placeholder="Search contacts..."
-            className="w-full bg-white/5 border border-white/5 rounded-xl py-2.5 sm:py-3.5 pl-11 pr-4 text-[14px] sm:text-[15px] placeholder:text-white/20 outline-none focus:border-violet-500/30 focus:bg-white/10 transition-all"
+            className="w-full bg-[#251e36]/60 border border-white/5 rounded-[20px] py-3 sm:py-3.5 pl-12 pr-4 text-[14px] sm:text-[15px] placeholder:text-white/30 outline-none focus:border-violet-500/30 focus:bg-[#251e36] focus:ring-2 focus:ring-violet-500/10 transition-all shadow-inner"
             value={input}
             onChange={(e) => setInput(e.target.value)}
           />
@@ -98,9 +98,9 @@ const Sidebar = () => {
                     [user._id]: 0,
                   }));
                 }}
-                className={`relative flex items-center gap-3 p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl cursor-pointer transition-all duration-200 group ${selectedUser?._id === user._id
-                    ? "bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-500/20 shadow-lg"
-                    : "hover:bg-white/5 border border-transparent"
+                className={`relative flex items-center gap-3.5 p-3 sm:p-4 rounded-[1.25rem] cursor-pointer transition-all duration-300 group ${selectedUser?._id === user._id
+                    ? "bg-gradient-to-r from-violet-600/20 to-fuchsia-600/20 border border-violet-500/30 shadow-[0_4px_20px_rgba(139,92,246,0.15)]"
+                    : "hover:bg-white/[0.04] border border-transparent hover:border-white/5"
                   }`}
               >
                 <div className="relative flex-none">
@@ -122,12 +122,12 @@ const Sidebar = () => {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-0.5">
-                    <h3 className="font-semibold text-[14px] sm:text-[15px] truncate text-white/90 group-hover:text-white transition-colors">
+                    <h3 className="font-semibold text-[15px] sm:text-[16px] truncate text-white/90 group-hover:text-white transition-colors tracking-tight">
                       {user.fullName}
                     </h3>
                   </div>
                   <div className="flex items-center gap-2">
-                    <p className={`text-[11px] sm:text-xs truncate ${onlineUsers.includes(user._id) ? "text-emerald-400/70" : "text-white/30"}`}>
+                    <p className={`text-[12px] sm:text-[13px] font-medium truncate transition-colors ${onlineUsers.includes(user._id) ? "text-emerald-400" : "text-white/30 group-hover:text-white/40"}`}>
                       {onlineUsers.includes(user._id) ? "Active now" : "Offline"}
                     </p>
                   </div>

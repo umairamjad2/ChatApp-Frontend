@@ -97,7 +97,7 @@ const MessageItem = React.memo(({
         )}
         {!isOwnMessage && isConsecutiveNext && <div className="w-8" />}
 
-        <div className={`flex flex-col ${isOwnMessage ? "items-end" : "items-start"}`}>
+        <div className={`flex flex-col max-w-full ${isOwnMessage ? "items-end" : "items-start"}`}>
           {msg.image ? (
             <div className="relative group/img mb-1.5">
               <img
@@ -116,11 +116,11 @@ const MessageItem = React.memo(({
               </div>
             </div>
           ) : (
-            <div className={`relative px-4 py-3 pr-14 text-[15px] font-normal rounded-[22px] shadow-lg text-left ${isOwnMessage
+            <div className={`relative px-4 py-3 pr-14 max-w-full text-[15px] font-normal rounded-[22px] shadow-lg text-left ${isOwnMessage
               ? `bg-gradient-to-tr from-violet-600 to-fuchsia-600 text-white ${isConsecutiveNext ? "rounded-br-[6px]" : "rounded-br-[2px]"}`
               : `bg-[#251e36] text-white/95 border border-white/5 ${isConsecutiveNext ? "rounded-bl-[6px]" : "rounded-bl-[2px]"}`
               }`}>
-              <p className="break-words leading-relaxed whitespace-pre-wrap text-left">{msg.text}</p>
+              <p className="break-words [word-break:break-word] leading-relaxed whitespace-pre-wrap text-left">{msg.text}</p>
               <div className={`absolute bottom-2 right-3 flex items-center gap-1 ${isOwnMessage ? "text-white/60" : "text-white/40"}`}>
                 <p className="text-[10px] font-bold tracking-tight">{formatMessageTime(msg.createdAt)}</p>
                 {isOwnMessage && <TickIndicator status={msg.status} seen={msg.seen} size="sm" />}
@@ -361,7 +361,7 @@ const ChatContainer = () => {
           key={selectedUser._id}
           ref={containerRef}
           onScroll={handleScroll}
-          className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 px-[max(16px,env(safe-area-inset-left))] pr-[max(16px,env(safe-area-inset-right))] custom-scrollbar"
+          className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 px-[max(16px,env(safe-area-inset-left))] pr-[max(16px,env(safe-area-inset-right))] custom-scrollbar flex flex-col"
         >
           {/* Loading older messages indicator */}
           {loadingMore && (
@@ -373,20 +373,33 @@ const ChatContainer = () => {
             </div>
           )}
 
-          {/* Message list */}
-          <div className="flex flex-col">
-            {Array.isArray(messages) && messages.map((msg, index) => (
-              <MessageItem
-                key={msg._id}
-                msg={msg}
-                index={index}
-                messages={messages}
-                authUserId={authUser?._id}
-                selectedUser={selectedUser}
-                onContextMenu={handleMessageContextMenu}
-              />
-            ))}
-          </div>
+          {/* Message list or Empty State */}
+          {Array.isArray(messages) && messages.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center px-4 animate-in fade-in zoom-in-95 duration-500 min-h-[50vh]">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#251e36] flex items-center justify-center mb-4 sm:mb-5 shadow-[0_8px_32px_-4px_rgba(139,92,246,0.3)] border border-white/5 relative">
+                <div className="absolute inset-0 rounded-full bg-violet-500/20 blur-xl animate-pulse" />
+                <MessageSquare className="w-8 h-8 sm:w-9 sm:h-9 text-violet-400 relative z-10" strokeWidth={2} />
+              </div>
+              <h3 className="text-xl font-semibold text-white/90 mb-2 tracking-tight">No messages yet</h3>
+              <p className="text-[14px] text-white/40 max-w-[260px] leading-relaxed">
+                Send a message to start the conversation with <span className="text-white/70 font-medium">{selectedUser?.fullName}</span>.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col flex-1">
+              {Array.isArray(messages) && messages.map((msg, index) => (
+                <MessageItem
+                  key={msg._id}
+                  msg={msg}
+                  index={index}
+                  messages={messages}
+                  authUserId={authUser?._id}
+                  selectedUser={selectedUser}
+                  onContextMenu={handleMessageContextMenu}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Invisible scroll anchor */}
           <div ref={scrollAnchorRef} className="h-1" />
@@ -410,10 +423,10 @@ const ChatContainer = () => {
           </div>
         )}
 
-        <form onSubmit={handleSendMessage} className="max-w-[1200px] mx-auto flex items-end gap-1.5">
-          <div className="flex-1 bg-white/5 border border-white/10 rounded-[20px] flex items-end px-1.5 py-0.5 gap-0.5 focus-within:border-violet-500/50 focus-within:ring-4 focus-within:ring-violet-500/10 focus-within:bg-white/10 transition-all duration-300 shadow-2xl">
+        <form onSubmit={handleSendMessage} className="max-w-[1200px] mx-auto flex items-end gap-2.5">
+          <div className="flex-1 bg-[#251e36]/80 border border-white/5 rounded-[24px] flex items-end px-2 py-1 gap-2 focus-within:border-violet-500/40 focus-within:ring-2 focus-within:ring-violet-500/10 focus-within:bg-[#251e36] transition-all duration-300 shadow-xl">
             {/* Emoji picker button */}
-            <div className="relative" ref={emojiPickerRef}>
+            <div className="relative pb-[3px]" ref={emojiPickerRef}>
               <button
                 type="button"
                 onClick={(e) => {
@@ -422,7 +435,7 @@ const ChatContainer = () => {
                 }}
                 className={`p-2.5 rounded-2xl transition-all ${showEmojiPicker ? "bg-violet-500/20 text-violet-400" : "text-white/30 hover:bg-white/10 hover:text-white"}`}
               >
-                <Smile className="w-5 h-5" />
+                <Smile className="w-5 h-5 sm:w-[22px] sm:h-[22px]" />
               </button>
 
               {/* Emoji picker popover */}
@@ -468,10 +481,10 @@ const ChatContainer = () => {
                 if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendMessage(e); }
               }}
               placeholder="Type a message..."
-              className="flex-1 bg-transparent py-2.5 text-white outline-none placeholder:text-white/20 text-[14px] resize-none max-h-[120px] custom-scrollbar"
+              className="flex-1 bg-transparent py-3 px-1 text-white outline-none placeholder:text-white/20 text-[15px] resize-none max-h-[120px] custom-scrollbar"
             />
-            <div className="flex items-center pb-1.5 gap-1">
-              <label className="p-2.5 hover:bg-white/10 rounded-2xl transition-all text-white/30 hover:text-white cursor-pointer group">
+            <div className="flex items-center pb-[3px] pr-1 gap-1">
+              <label className="p-2.5 hover:bg-white/10 rounded-full transition-all text-white/30 hover:text-white cursor-pointer group">
                 <Image className="w-5 h-5 group-hover:scale-110 transition-transform" />
                 <input type="file" id="image-input" name="image-input" accept="image/*" className="hidden" onChange={handleImageChange} />
               </label>
@@ -481,9 +494,9 @@ const ChatContainer = () => {
             type="submit"
             disabled={!input.trim() && !imagePreview}
             onMouseDown={(e) => e.preventDefault()}
-            className={`flex-none w-11 h-11 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-lg shadow-violet-600/20 ${input.trim() || imagePreview
-              ? "bg-gradient-to-tr from-violet-600 to-fuchsia-600 text-white hover:scale-105 active:scale-95"
-              : "bg-white/5 text-white/20 cursor-not-allowed"
+            className={`flex-none w-[50px] h-[50px] mb-[1px] rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_4px_16px_rgba(0,0,0,0.3)] ${input.trim() || imagePreview
+              ? "bg-gradient-to-tr from-violet-600 to-fuchsia-600 text-white hover:scale-105 active:scale-95 hover:shadow-violet-500/40"
+              : "bg-[#251e36] text-white/20 cursor-not-allowed border border-white/5"
               }`}
           >
             <Send className="w-5 h-5" />

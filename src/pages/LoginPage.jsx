@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import assets from "../assets/assets";
 import { AuthContext } from "../../context/AuthContext";
+import { Eye, EyeOff, User, Mail, Lock, MessageSquare } from "lucide-react";
 
 const LoginPage = () => {
   const [currState, setCurrState] = useState("Sign up");
@@ -26,135 +27,194 @@ const LoginPage = () => {
       bio,
     });
   };
+
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 bg-black overflow-hidden">
-      {/* Blurred Background Layer */}
-      <div
-        className="absolute inset-0 bg-cover bg-center scale-110"
-        style={{
-          backgroundImage: "url('/bgImage.svg')",
-          filter: "blur(80px)",
-          opacity: "0.6"
-        }}
-      ></div>
+    <div className="min-h-screen relative flex items-center justify-center p-4 bg-[#0a0614] overflow-hidden">
+      {/* Premium Blurred Background Layer */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-violet-600/20 blur-[120px] rounded-full mix-blend-screen" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-fuchsia-600/20 blur-[120px] rounded-full mix-blend-screen" />
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay"
+          style={{ backgroundImage: "url('/bgImage.svg')" }}
+        />
+      </div>
 
-      <div className="relative flex flex-col items-center gap-6 sm:gap-8 w-full max-w-[380px]">
-        {/* logo */}
-        <img src={assets.logo_big} alt="QuickChat" className="w-[min(40vw,140px)] sm:w-[180px] drop-shadow-2xl" />
+      <div className="relative flex flex-col items-center gap-8 w-full max-w-[420px] z-10 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
+        {/* Logo Section */}
+        <div className="flex justify-center">
+          <div className="relative group flex flex-row items-center gap-4 sm:gap-5 cursor-default">
+            {/* Ambient background glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-violet-500/40 blur-[40px] rounded-full group-hover:bg-violet-500/60 group-hover:w-40 transition-all duration-700" />
+            
+            {/* 3D App Icon */}
+            <div className="relative w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-violet-600 via-violet-500 to-fuchsia-500 rounded-[1rem] sm:rounded-[1.2rem] flex flex-shrink-0 items-center justify-center shadow-[0_8px_32px_-4px_rgba(139,92,246,0.5)] transform group-hover:-translate-y-1 group-hover:shadow-[0_16px_40px_-4px_rgba(139,92,246,0.6)] transition-all duration-300 border border-white/20 z-10">
+              {/* Inner glass overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-[1rem] sm:rounded-[1.2rem]" />
+              <MessageSquare className="w-7 h-7 sm:w-8 sm:h-8 text-white fill-white/10 drop-shadow-md z-10" strokeWidth={2.5} />
+              {/* Online indicator dot */}
+              <div className="absolute top-[-2px] right-[-2px] sm:top-[-3px] sm:right-[-3px] w-3.5 h-3.5 sm:w-4 sm:h-4 bg-[#150f22] rounded-full flex items-center justify-center z-20">
+                <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-emerald-400 rounded-full shadow-[0_0_12px_rgba(52,211,153,0.8)] animate-pulse" />
+              </div>
+            </div>
 
-        <form
-          onSubmit={onSubmitHandler}
-          className="bg-[#1a1429]/60 backdrop-blur-3xl text-white border border-white/10 p-6 sm:p-8 flex flex-col gap-4 rounded-[1.8rem] shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] w-full"
-        >
-          <h2 className="font-semibold text-2xl flex justify-between items-center mb-2">
-            {currState}
+            {/* Premium Typography */}
+            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight flex items-center gap-0.5 group-hover:scale-[1.02] transition-transform duration-300 z-10">
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70 drop-shadow-sm">Quick</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-b from-violet-400 to-fuchsia-500 drop-shadow-sm">Chat</span>
+            </h1>
+          </div>
+        </div>
+
+        {/* Main Card */}
+        <div className="bg-[#150f22]/80 backdrop-blur-2xl text-white border border-white/5 p-8 flex flex-col gap-6 rounded-[2rem] shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] w-full relative overflow-hidden">
+          {/* Subtle shine effect on top edge */}
+          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+
+          {/* Header */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="font-bold text-3xl tracking-tight text-white mb-1">
+                {currState === "Sign up" ? "Create Account" : "Welcome Back"}
+              </h2>
+              <p className="text-white/40 text-[14px]">
+                {currState === "Sign up" ? "Sign up to get started" : "Please enter your details to sign in"}
+              </p>
+            </div>
+            
             {isDataSubmitted && (
-              <img
+              <button 
+                type="button"
                 onClick={() => setIsDataSubmitted(false)}
-                src={assets.arrow_icon}
-                alt=""
-                className="w-5 cursor-pointer opacity-70 hover:opacity-100 transition-opacity"
-              />
+                className="p-2.5 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-all group"
+              >
+                <img src={assets.arrow_icon} alt="Back" className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+              </button>
             )}
-          </h2>
+          </div>
 
-          {currState == "Sign up" && !isDataSubmitted && (
-            <input
-              onChange={(e) => setFullName(e.target.value)}
-              value={fullName}
-              type="text"
-              className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 text-white placeholder-gray-500 transition-all"
-              placeholder="Full Name"
-              required
-            />
-          )}
-          {!isDataSubmitted && (
-            <>
-              <input
-                type="email"
-                onChange={(e) => setEmail(e.target.value)}
-                value={email}
-                className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 text-white placeholder-gray-500 transition-all"
-                placeholder="Email Address"
-                required
-              />
-              <div className="relative w-full">
+          <form onSubmit={onSubmitHandler} className="flex flex-col gap-4">
+            
+            {/* Full Name Input */}
+            {currState === "Sign up" && !isDataSubmitted && (
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/30 group-focus-within:text-violet-400 transition-colors">
+                  <User className="w-5 h-5" />
+                </div>
                 <input
-                  type={showPassword ? "text" : "password"}
-                  onChange={(e) => setPassword(e.target.value)}
-                  value={password}
-                  className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 text-white placeholder-gray-500 transition-all pr-12"
-                  placeholder="Enter your password"
+                  type="text"
                   required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full pl-11 pr-6 py-4 bg-[#251e36] border border-white/5 rounded-2xl focus:outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20 focus:bg-[#2a223e] text-white placeholder:text-white/30 text-[15px] transition-all"
+                  placeholder="Full Name"
                 />
+              </div>
+            )}
+
+            {!isDataSubmitted && (
+              <>
+                {/* Email Input */}
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/30 group-focus-within:text-violet-400 transition-colors">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-11 pr-6 py-4 bg-[#251e36] border border-white/5 rounded-2xl focus:outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20 focus:bg-[#2a223e] text-white placeholder:text-white/30 text-[15px] transition-all"
+                    placeholder="Email Address"
+                  />
+                </div>
+
+                {/* Password Input */}
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-white/30 group-focus-within:text-violet-400 transition-colors">
+                    <Lock className="w-5 h-5" />
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-11 pr-12 py-4 bg-[#251e36] border border-white/5 rounded-2xl focus:outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20 focus:bg-[#2a223e] text-white placeholder:text-white/30 text-[15px] transition-all"
+                    placeholder="Password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/30 hover:text-white transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* Bio Input */}
+            {currState === "Sign up" && isDataSubmitted && (
+              <div className="relative group">
+                <textarea
+                  required
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  rows={4}
+                  className="w-full p-4 bg-[#251e36] border border-white/5 rounded-2xl focus:outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20 focus:bg-[#2a223e] text-white placeholder:text-white/30 text-[15px] transition-all resize-none custom-scrollbar"
+                  placeholder="Tell us a little bit about yourself..."
+                />
+              </div>
+            )}
+
+            {/* Terms Checkbox */}
+            <label className="flex items-center gap-3 mt-1 cursor-pointer group">
+              <div className="relative flex items-center justify-center flex-shrink-0">
+                <input 
+                  type="checkbox" 
+                  required
+                  className="peer appearance-none w-5 h-5 bg-[#251e36] border border-white/10 rounded-lg checked:bg-violet-500 checked:border-violet-500 transition-all cursor-pointer" 
+                />
+                <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" viewBox="0 0 12 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1.5 5.5L4.5 8.5L10.5 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <p className="text-[13px] text-white/50 leading-snug group-hover:text-white/70 transition-colors">
+                I agree to the <span className="text-violet-400 hover:text-violet-300 transition-colors">terms of use</span> & <span className="text-violet-400 hover:text-violet-300 transition-colors">privacy policy</span>.
+              </p>
+            </label>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="mt-4 w-full relative group overflow-hidden bg-[#251e36] rounded-2xl"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-fuchsia-600 opacity-90 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-20 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.5),transparent)] -translate-x-[150%] group-hover:translate-x-[150%] transition-transform duration-700 ease-in-out" />
+              <div className="relative px-6 py-4 font-semibold text-white tracking-wide flex items-center justify-center gap-2 shadow-lg shadow-violet-500/20 group-hover:shadow-violet-500/40 transition-all group-active:scale-[0.98]">
+                {currState === "Sign up" ? "Create Account" : "Sign In"}
+              </div>
+            </button>
+
+            {/* Toggle Login/Signup */}
+            <div className="mt-4 text-center">
+              <p className="text-[14px] text-white/50">
+                {currState === "Sign up" ? "Already have an account?" : "Don't have an account?"}{" "}
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" /><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" /><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" /><line x1="2" x2="22" y1="2" y2="22" /></svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
-                  )}
-                </button>
-              </div>
-            </>
-          )}
-
-          {currState === "Sign up" && isDataSubmitted && (
-            <textarea
-              onChange={(e) => setBio(e.target.value)}
-              value={bio}
-              rows={4}
-              className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 text-white placeholder-gray-500 transition-all resize-none"
-              placeholder="Provide a short bio..."
-              required
-            ></textarea>
-          )}
-
-          <button
-            type="submit"
-            className="mt-2 bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-400 hover:to-violet-500 text-white py-3.5 rounded-xl font-medium shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:-translate-y-0.5 transition-all active:translate-y-0"
-          >
-            {currState === "Sign up" ? "Create Account" : "Login Now"}
-          </button>
-
-          <div className="flex items-center gap-2 text-xs text-gray-400 mt-2">
-            <input type="checkbox" className="accent-violet-500 w-4 h-4 rounded border-white/20 bg-white/5" />
-            <p>Agree to the terms of use & privacy policy.</p>{" "}
-          </div>
-
-          <div className="flex flex-col gap-2 mt-1">
-            {currState === "Sign up" ? (
-              <p className="text-sm text-gray-400">
-                Already have an account?{" "}
-                <span
-                  className="font-medium text-violet-400 hover:text-violet-300 cursor-pointer transition-colors"
                   onClick={() => {
-                    setCurrState("Login");
+                    setCurrState(currState === "Sign up" ? "Login" : "Sign up");
                     setIsDataSubmitted(false);
                   }}
+                  className="font-medium text-violet-400 hover:text-violet-300 transition-colors focus:outline-none focus:underline"
                 >
-                  Login here
-                </span>
+                  {currState === "Sign up" ? "Log in here" : "Sign up now"}
+                </button>
               </p>
-            ) : (
-              <p className="text-sm text-gray-400">
-                Create an account?{" "}
-                <span
-                  className="font-medium text-violet-400 hover:text-violet-300 cursor-pointer transition-colors"
-                  onClick={() => {
-                    setCurrState("Sign up");
-                  }}
-                >
-                  Click here
-                </span>
-              </p>
-            )}
-          </div>
-        </form>
+            </div>
+            
+          </form>
+        </div>
       </div>
     </div>
   );
