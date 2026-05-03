@@ -5,7 +5,7 @@ import { ChatContext } from "../../context/ChatContext";
 import toast from "react-hot-toast";
 import { AuthContext } from "../../context/AuthContext";
 import {
-  ArrowLeft, Phone, Video, MoreVertical, CheckCheck, Check,
+  ArrowLeft, MoreVertical, CheckCheck, Check,
   Smile, Image, Send, X, MessageSquare, Trash2
 } from "lucide-react";
 
@@ -93,21 +93,19 @@ const ChatContainer = () => {
     reader.readAsDataURL(file);
   };
 
-  // Instant jump to bottom on initialization
+  // Instant jump to bottom on initialization of a NEW chat
   useLayoutEffect(() => {
-    if (shouldScrollToBottom.current && messages?.length > 0) {
+    if (shouldScrollToBottom.current && messages?.length > 0 && !loadingMessages) {
       const container = messageContainerRef.current;
       if (container) {
-        container.scrollTop = container.scrollHeight;
-        // Double check after a tiny delay for late-loading layout shifts
-        const timeout = setTimeout(() => {
+        // Use requestAnimationFrame for smoother performance
+        requestAnimationFrame(() => {
           container.scrollTop = container.scrollHeight;
-        }, 0);
-        shouldScrollToBottom.current = false;
-        return () => clearTimeout(timeout);
+          shouldScrollToBottom.current = false;
+        });
       }
     }
-  }, [messages, selectedUser]);
+  }, [messages, selectedUser, loadingMessages]);
 
   const prevScrollHeightRef = useRef(0);
   const isPrependingRef = useRef(false);
@@ -340,12 +338,6 @@ const ChatContainer = () => {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
-          <button className="p-2.5 hover:bg-white/5 rounded-xl transition-all text-white/40 hover:text-white">
-            <Phone className="w-5 h-5" />
-          </button>
-          <button className="p-2.5 hover:bg-white/5 rounded-xl transition-all text-white/40 hover:text-white">
-            <Video className="w-5 h-5" />
-          </button>
           <div className="relative">
             <button
               onClick={(e) => {
@@ -393,6 +385,7 @@ const ChatContainer = () => {
         <MessageSkeleton />
       ) : (
         <div
+          key={selectedUser._id} // Keying by userId ensures a fresh container state on switch
           ref={messageContainerRef}
           onScroll={handleScroll}
           className="flex-1 overflow-y-auto p-4 sm:p-6 px-[max(16px,env(safe-area-inset-left))] pr-[max(16px,env(safe-area-inset-right))] custom-scrollbar transform-gpu"

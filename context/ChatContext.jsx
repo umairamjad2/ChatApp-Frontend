@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { AuthContext } from "./AuthContext";
 import toast from "react-hot-toast";
 
@@ -13,13 +13,14 @@ export const ChatProvider = ({ children }) => {
   const [unseenMessages, setUnseenMessages] = useState({});
   const [activeRoomId, setActiveRoomId] = useState(null);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const lastRequestedUserId = useRef(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [showRightSidebar, setShowRightSidebar] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
 
   // function to get users for sidebar
-  const getUsers = async () => {
+  const getUsers = useCallback(async () => {
     try {
       const { data } = await axios.get(`/api/messages/users`);
       if (data.success) {
@@ -31,29 +32,45 @@ export const ChatProvider = ({ children }) => {
     } catch (error) {
       toast.error(error.message);
     }
-  };
+  }, [axios]);
 
   // function to get selected user messages
-  const getMessages = async (userId) => {
+  const getMessages = useCallback(async (userId) => {
+    if (!userId) return;
+
+    // 1. Immediately clear messages and show loading to prevent flicker
+    setMessages([]);
     setLoadingMessages(true);
     setHasMore(true);
+
+    // 2. Track the request to prevent race conditions
+    lastRequestedUserId.current = userId;
+
     try {
       const { data } = await axios.get(`/api/messages/${userId}?limit=20`);
-      if (data.success) {
-        setMessages(data.messages);
-        if (data.messages.length < 20) setHasMore(false);
-      } else {
-        console.log(data.message);
+
+      // 3. Only update state if this is still the most recent request
+      if (lastRequestedUserId.current === userId) {
+        if (data.success) {
+          setMessages(data.messages);
+          if (data.messages.length < 20) setHasMore(false);
+        } else {
+          console.log(data.message);
+        }
       }
     } catch (error) {
-      toast.error(error.message);
+      if (lastRequestedUserId.current === userId) {
+        toast.error(error.message);
+      }
     } finally {
-      setLoadingMessages(false);
+      if (lastRequestedUserId.current === userId) {
+        setLoadingMessages(false);
+      }
     }
-  };
+  }, [axios]);
 
   // function to load older messages
-  const loadMoreMessages = async (userId, offset) => {
+  const loadMoreMessages = useCallback(async (userId, offset) => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     try {
@@ -71,9 +88,9 @@ export const ChatProvider = ({ children }) => {
       setLoadingMore(false);
     }
     return 0;
-  };
+  }, [axios, loadingMore, hasMore]);
   //function to send message
-  const sendMessage = async (messageData) => {
+  const sendMessage = useCallback(async (messageData) => {
     try {
       const { data } = await axios.post(
         `/api/messages/send/${selectedUser._id}`,
@@ -88,10 +105,10 @@ export const ChatProvider = ({ children }) => {
     } catch (error) {
       toast.error(error.message);
     }
-  };
+  }, [axios, selectedUser]);
 
   // function to delete message
-  const deleteMessage = async (messageId, deleteForEveryone) => {
+  const deleteMessage = useCallback(async (messageId, deleteForEveryone) => {
     try {
       const { data } = await axios.delete(`/api/messages/${messageId}`, {
         data: { delete_for_everyone: deleteForEveryone },
@@ -114,10 +131,10 @@ export const ChatProvider = ({ children }) => {
     } catch (error) {
       toast.error(error.response?.data?.message || error.message);
     }
-  };
+  }, [axios]);
 
   // function to clear chat
-  const clearChat = async (userId) => {
+  const clearChat = useCallback(async (userId) => {
     if (!userId) return toast.error("User ID is required");
     setIsClearing(true);
     try {
@@ -133,9 +150,9 @@ export const ChatProvider = ({ children }) => {
     } finally {
       setIsClearing(false);
     }
-  };
+  }, [axios]);
   // function to subscribe to selected user messages
-  const subscribeToMessages = async () => {
+  const subscribeToMessages = useCallback(async () => {
     if (!socket) return;
     socket.on("newMessage", (newMessage) => {
       if (selectedUser && newMessage.senderId === selectedUser._id) {
@@ -159,22 +176,30 @@ export const ChatProvider = ({ children }) => {
         )
       );
     });
-  };
+  }, [socket, selectedUser, axios]);
 
   //function to unsubscribe from selected user messages
-  const unsubscribeFromMessages = async () => {
+  const unsubscribeFromMessages = useCallback(async () => {
     if (!socket) return;
     socket.off("newMessage");
     socket.off("messageDeleted");
-  };
+  }, [socket]);
 
   //  Listen for incoming messages
   useEffect(() => {
     subscribeToMessages();
     return () => unsubscribeFromMessages();
-  }, [socket, selectedUser]);
+  }, [subscribeToMessages, unsubscribeFromMessages]);
 
-  const value = {
+  const handleSetSelectedUser = useCallback((user) => {
+    setSelectedUser(user);
+    if (user) {
+      setMessages([]);
+      setLoadingMessages(true);
+    }
+  }, []);
+
+  const value = useMemo(() => ({
     messages,
     users,
     selectedUser,
@@ -184,16 +209,22 @@ export const ChatProvider = ({ children }) => {
     deleteMessage,
     clearChat,
     isClearing,
-    setSelectedUser,
+    setSelectedUser: handleSetSelectedUser,
     unseenMessages,
     setUnseenMessages,
+    loadingMessages,
     getMessages,
     loadMoreMessages,
     loadingMore,
     hasMore,
     showRightSidebar,
     setShowRightSidebar,
-  };
+  }), [
+    messages, users, selectedUser, getUsers, sendMessage, deleteMessage,
+    clearChat, isClearing, handleSetSelectedUser, unseenMessages,
+    loadingMessages, getMessages, loadMoreMessages, loadingMore,
+    hasMore, showRightSidebar, setShowRightSidebar
+  ]);
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;
 };

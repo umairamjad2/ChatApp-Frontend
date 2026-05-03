@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from "react";
+import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   //check if user is authenticated and if so, set the user data and connect to socket
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     try {
       const { data } = await axios.get("/api/auth/check");
       if (data.success) {
@@ -29,10 +29,10 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setIsCheckingAuth(false);
     }
-  };
+  }, []);
   //function to update token and user data on login or logout
 
-  const login = async (state, credentials) => {
+  const login = useCallback(async (state, credentials) => {
     try {
       const { data } = await axios.post(`/api/auth/${state}`, credentials);
       if (data.success) {
@@ -48,10 +48,10 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       toast.error(error.message);
     }
-  };
+  }, []);
 
   //function to handle logout, clear all auth data and disconnect socket
-  const logout = async () => {
+  const logout = useCallback(async () => {
     // Remove from localStorage
     localStorage.removeItem("token");
     // Clear all auth data
@@ -64,11 +64,11 @@ export const AuthProvider = ({ children }) => {
     toast.success("Logged out successfully");
 
     // Disconnect socket
-    socket.disconnect();
-  };
+    if (socket) socket.disconnect();
+  }, [socket]);
 
   //update profile function to update user profile updates
-  const updateProfile = async (body) => {
+  const updateProfile = useCallback(async (body) => {
     try {
       const { data } = await axios.put("/api/auth/update-profile", body);
       if (data.success) {
@@ -80,10 +80,10 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       toast.error(error.message);
     }
-  };
+  }, []);
 
   //connect socket function to handle socket connections and online users updates
-  const connectSocket = (userData) => {
+  const connectSocket = useCallback((userData) => {
     if (!userData || socket?.connected) return;
     const newSocket = io(backendUrl, {
       query: { userId: userData._id },
@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }) => {
     newSocket.on("getOnlineUsers", (users) => {
       setOnlineUsers(users);
     });
-  };
+  }, [socket]);
 
   useEffect(() => {
     if (token) {
@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     axios,
     authUser,
     onlineUsers,
@@ -114,7 +114,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     updateProfile,
-  };
+  }), [authUser, onlineUsers, socket, isCheckingAuth, login, logout, updateProfile]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
